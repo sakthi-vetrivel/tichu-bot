@@ -14,12 +14,24 @@ class TichuGame: ObservableObject {
         return model.players
     }
     
+    var discardedHands: [DiscardHand] {
+        return model.discardedHands
+    }
+    
     func select(_ card: Card, in player: Player) {
         model.select(card, player: player)
     }
     
     func evaluateHand(_ cards:Stack) -> HandType {
         return HandType(cards)
+    }
+    
+    func activatePlayer(_ player: Player) {
+        model.activatePlayer(player)
+    }
+    
+    func findStartingPlayer() -> Player {
+        return model.findStartingPlayer()
     }
 }
 

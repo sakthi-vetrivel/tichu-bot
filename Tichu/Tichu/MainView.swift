@@ -26,6 +26,13 @@ struct MainView: View {
                 ZStack {
                     Rectangle()
                         .foregroundColor(Color.yellow)
+                    ForEach(tichu.discardedHands) {
+                        discardHand in LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -5), count: discardHand.hand.count)) {
+                            ForEach(discardHand.hand) { card in
+                                CardView(card: card)
+                            }
+                        }
+                    }
                     let playerHand = tichu.players[3].cards.filter{$0.selected == true}
                     let handType = "\(tichu.evaluateHand(playerHand))"
                     Text(handType)
@@ -41,6 +48,12 @@ struct MainView: View {
                     }
                 }
             }
+        }
+        .onAppear() {
+            print("On Appear")
+            let playerWithOne = tichu.findStartingPlayer()
+            tichu.activatePlayer(playerWithOne)
+            print(playerWithOne.playerName)
         }
     }
 }

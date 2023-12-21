@@ -1,3 +1,4 @@
+@testable import Tichu
 //
 //  GenerateHands.swift
 //  TichuTests
@@ -7,8 +8,111 @@
 
 import XCTest
 
-final class GenerateHands: XCTestCase {
+class GenerateHands: XCTestCase {
+    
+    func testGeneratePairsTripsFours() {
+        let cards: Stack = [
+            Card(rank: .three, suit: .hearts),
+            Card(rank: .three, suit: .spades),
+            Card(rank: .three, suit: .diamonds),
+            Card(rank: .four, suit: .diamonds),
+            Card(rank: .four, suit: .clubs),
+            Card(rank: .five, suit: .hearts)
+        ]
 
+        let expectedPairsCount = 4
+        let expectedTripsCount = 1
+        let expectedFourOfAKindsCount = 0
+
+        let generatedHands = cards.generatePairsTripsFours()
+        let pairs = generatedHands.filter { $0.count == 2 }
+        let trips = generatedHands.filter { $0.count == 3 }
+        let fourOfAKinds = generatedHands.filter { $0.count == 4 }
+
+        XCTAssertEqual(pairs.count, expectedPairsCount)
+        XCTAssertEqual(trips.count, expectedTripsCount)
+        XCTAssertEqual(fourOfAKinds.count, expectedFourOfAKindsCount)
+        
+        let validHands = cards.generateAllPossibleHands()
+        XCTAssertEqual(validHands.count, 13)
+    }
+
+    func testGenerateStraights() {
+        let cards: Stack = [
+            Card(rank: .two, suit: .hearts),
+            Card(rank: .three, suit: .spades),
+            Card(rank: .five, suit: .clubs),
+            Card(rank: .six, suit: .hearts),
+            Card(rank: .eight, suit: .hearts),
+            Card(rank: .phoenix, suit: .diamonds)
+        ]
+
+        let expectedStraightsCount = 1
+        let generatedStraights = cards.generateStraights()
+        
+        XCTAssertEqual(generatedStraights.count, expectedStraightsCount)
+    }
+
+    func testGenerateFullHouses() {
+        let cards: Stack = [
+            Card(rank: .three, suit: .hearts),
+            Card(rank: .three, suit: .spades),
+            Card(rank: .three, suit: .diamonds),
+            Card(rank: .four, suit: .clubs),
+            Card(rank: .four, suit: .hearts)
+        ]
+
+        let expectedFullHousesCount = 1
+        let generatedFullHouses = cards.generateFullHouses()
+
+        XCTAssertEqual(generatedFullHouses.count, expectedFullHousesCount)
+    }
+    
+    // Test generateStairs with Phoenix
+    func testGenerateStairsWithPhoenix() {
+        let cards: Stack = [
+            Card(rank: .two, suit: .hearts),
+            Card(rank: .two, suit: .spades),
+            Card(rank: .phoenix, suit: .diamonds), // Acts as three
+            Card(rank: .three, suit: .diamonds),
+            Card(rank: .four, suit: .spades)
+        ]
+        let generatedStairs = cards.generateStairs()
+
+        XCTAssertEqual(generatedStairs.count, 1, "Should generate one set of stairs with Phoenix")
+        XCTAssertEqual(generatedStairs.first?.count, 4, "The stairs should include 4 cards (including Phoenix)")
+    }
+
+    // Test generateStairs with broken stairs
+    func testGenerateStairsWithBrokenSequence() {
+        let cards: Stack = [
+            Card(rank: .two, suit: .hearts),
+            Card(rank: .four, suit: .spades),
+            Card(rank: .four, suit: .clubs),
+            Card(rank: .three, suit: .diamonds)
+        ]
+        let generatedStairs = cards.generateStairs()
+
+        XCTAssertTrue(generatedStairs.isEmpty, "Should not generate stairs with broken sequence")
+    }
+
+    // Test generateStairs with stairs length greater than 4
+    func testGenerateStairsWithLengthGreaterThanFour() {
+        let cards: Stack = [
+            Card(rank: .two, suit: .hearts),
+            Card(rank: .two, suit: .spades),
+            Card(rank: .three, suit: .clubs),
+            Card(rank: .three, suit: .diamonds),
+            Card(rank: .four, suit: .hearts),
+            Card(rank: .four, suit: .spades)
+        ]
+        let generatedStairs = cards.generateStairs()
+
+        XCTAssertEqual(generatedStairs.count, 3, "Should generate one set of stairs")
+        XCTAssertEqual(generatedStairs[1].count, 6, "The stairs should include 6 cards")
+    }
+
+    
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }

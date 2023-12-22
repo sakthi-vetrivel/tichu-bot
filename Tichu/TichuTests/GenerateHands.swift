@@ -37,13 +37,12 @@ class GenerateHands: XCTestCase {
         XCTAssertEqual(validHands.count, 13)
     }
 
-    func testGenerateStraights() {
+    func testGenerateStraightsWithPhoenix() {
         let cards: Stack = [
             Card(rank: .two, suit: .hearts),
             Card(rank: .three, suit: .spades),
             Card(rank: .five, suit: .clubs),
             Card(rank: .six, suit: .hearts),
-            Card(rank: .eight, suit: .hearts),
             Card(rank: .phoenix, suit: .diamonds)
         ]
 
@@ -51,6 +50,50 @@ class GenerateHands: XCTestCase {
         let generatedStraights = cards.generateStraights()
         
         XCTAssertEqual(generatedStraights.count, expectedStraightsCount)
+    }
+    
+    func testGenerateStraightsWithDuplicates() {
+        let cards: Stack = [
+            Card(rank: .two, suit: .hearts),
+            Card(rank: .three, suit: .spades),
+            Card(rank: .five, suit: .clubs),
+            Card(rank: .six, suit: .hearts),
+            Card(rank: .four, suit: .hearts),
+            Card(rank: .two, suit: .diamonds)
+        ]
+
+        let expectedStraightsCount = 2
+        let generatedStraights = cards.generateStraights()
+        
+        XCTAssertEqual(generatedStraights.count, expectedStraightsCount)
+    }
+    
+    func testStraightsAtBoundaries() {
+        let cards: Stack = [
+            Card(rank: .one, suit: .clubs),
+            Card(rank: .three, suit: .spades),
+            Card(rank: .five, suit: .clubs),
+            Card(rank: .four, suit: .hearts),
+            Card(rank: .two, suit: .hearts),
+        ]
+        
+        let cards2: Stack = [
+            Card(rank: .ten, suit: .clubs),
+            Card(rank: .jack, suit: .spades),
+            Card(rank: .queen, suit: .clubs),
+            Card(rank: .king, suit: .hearts),
+            Card(rank: .ace, suit: .hearts)
+        ]
+
+        let expectedStraightsCount = 1
+        let generatedStraights = cards.generateStraights()
+        
+        XCTAssertEqual(generatedStraights.count, expectedStraightsCount)
+            
+        let expectedStraightsCount2 = 1
+        let generatedStraights2 = cards2.generateStraights()
+        
+        XCTAssertEqual(generatedStraights2.count, expectedStraightsCount2)
     }
 
     func testGenerateFullHouses() {

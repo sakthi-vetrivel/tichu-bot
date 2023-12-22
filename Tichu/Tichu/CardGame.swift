@@ -8,7 +8,7 @@
 import Foundation
 
 enum Rank: Int, CaseIterable, Comparable {
-    case dog=1, one=2, two=3, three=4, four=5, five=6, six=7, seven=8, eight=9, nine=10, ten=11, jack=12, queen=13, king=14, ace=15, phoenix=16, dragon=17
+    case dog=1, one=2, two=3, three=4, four=5, five=6, six=7, seven=8, eight=9, nine=10, ten=11, jack=12, queen=13, king=14, ace=15, phoenix=20, dragon=25
     static func < (lhs: Rank, rhs: Rank) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
@@ -35,7 +35,6 @@ struct Card : Identifiable {
         case Rank.dragon:
             return "dragon"
         default:
-            // TODO: needs to point to filenames of assets
             return "\(suit)" + "_" + "\(rank)"
         }
     }
@@ -159,43 +158,36 @@ extension Stack where Element == Card {
         print(possibleCombinations)
         return possibleCombinations
     }
-
     func generateStraights() -> [Stack] {
-//        let containsPhoenix = self.contains { $0.rank == .phoenix }
-        var phoenixAvailable = self.contains { $0.rank == .phoenix }
-        let nonSpecialCards = self.filter { !$0.rank.isSpecial() }
-        let sortedCards = nonSpecialCards.sortByRank()
+        // Step 1: Generate all combinations of cards with length 5 or more
+        let combinations = generateCombinations(minLength: 5)
 
-        var possibleStraights = [Stack]()
-        var currentChain: Stack = []
+        // Step 2: Filter combinations that form a straight
+        return combinations.filter { isStraight($0) }
+    }
 
-        for card in sortedCards {
-            if currentChain.isEmpty {
-                currentChain.append(card)
-                continue
+    private func generateCombinations(minLength: Int) -> [Stack] {
+        var result = [Stack]()
+        var temp = Stack()
+
+        func backtrack(start: Int) {
+            if temp.count >= minLength {
+                result.append(temp)
             }
 
-            let previousCard = currentChain.last!
-            if card.rank.rawValue == previousCard.rank.rawValue - 1 {
-                currentChain.append(card)
-            } else if phoenixAvailable && card.rank.rawValue == previousCard.rank.rawValue - 2 {
-                currentChain.append(Card(rank: .phoenix, suit: .diamonds))
-                currentChain.append(card)
-                phoenixAvailable = false
-            } else {
-                if currentChain.count >= 5 {
-                    possibleStraights.append(currentChain)
-                }
-                currentChain = [card]
+            for i in start..<count {
+                temp.append(self[i])
+                backtrack(start: i + 1)
+                temp.removeLast()
             }
         }
 
-        // Check for a straight at the end of the card list
-        if currentChain.count >= 5 {
-            possibleStraights.append(currentChain)
-        }
+        backtrack(start: 0)
+        return result
+    }
 
-        return possibleStraights
+    private func isStraight(_ stack: Stack) -> Bool {
+        return (HandType(stack) == .Straight || HandType(stack) == .StraightFlushBomb)
     }
 
 
@@ -438,26 +430,28 @@ enum HandType {
         
         // Check for straight
         if cards.count >= 5 {
-            //print("Check if straight")
-            let sortedHand = cards.sortByRank()
-            var isFlush = true
+            // Remove special cards and sort by rank
+            let sortedHand = cards.sortByRank().filter { !$0.rank.isSpecial() }
+            
+            var isFlush = phoenix ? false: true
             var isStraight = true
             
-            for i in 0 ..< cards.count - 1 {
-                if sortedHand[i].suit != sortedHand[i+1].suit {
+            for i in 0 ..< sortedHand.count - 1 {
+                if isFlush && (sortedHand[i].suit != sortedHand[i+1].suit) {
                     isFlush = false
                 }
-                print (sortedHand[i].rank.rawValue + 1)
-                print (sortedHand[i+1].rank.rawValue)
-                if sortedHand[i].rank.rawValue != sortedHand[i+1].rank.rawValue + 1 {
-                    if (phoenix) {
-                        phoenix = false
-                    }
-                    else {
-                        isStraight = false
-                        //print("Breaking out of straight check with card", sortedHand[i].rank)
-                        break // Break out of the loop once we find a mismatch
-                    }
+                if (sortedHand[i].rank.rawValue == (sortedHand[i+1].rank.rawValue + 1)) {
+                    // Normal consecutive cards
+                    continue
+                // If there is a phoenix
+                } else if (phoenix) {
+                    // See if we can use it
+                    
+                    // Use Phoenix to fill a single gap or at the end if it's not an Ace
+                    phoenix = false
+                } else {
+                    isStraight = false
+                    break
                 }
             }
             

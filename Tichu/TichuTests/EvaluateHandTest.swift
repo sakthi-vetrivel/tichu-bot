@@ -79,6 +79,17 @@ class EvaluateHandTests: XCTestCase {
     func testPhoenixInStraight() {
         let phoenixCard = Card(rank: .phoenix, suit: .hearts)
         let card1 = Card(rank: .two, suit: .clubs)
+        let card2 = Card(rank: .six, suit: .diamonds)
+        let card3 = Card(rank: .four, suit: .spades)
+        let card4 = Card(rank: .five, suit: .hearts)
+        let hand: Stack = [phoenixCard, card1, card2, card3, card4]
+        let handType = HandType(hand)
+        XCTAssertEqual(handType, .Straight, "Expected a straight")
+    }
+    
+    func testPhoenixInStraightAtEnd() {
+        let phoenixCard = Card(rank: .phoenix, suit: .hearts)
+        let card1 = Card(rank: .two, suit: .clubs)
         let card2 = Card(rank: .three, suit: .diamonds)
         let card3 = Card(rank: .four, suit: .spades)
         let card4 = Card(rank: .five, suit: .hearts)

@@ -30,6 +30,10 @@ class TichuGame: ObservableObject {
         model.activatePlayer(player)
     }
     
+    func activateNextPlayer() {
+        model.activateNextPlayerFromCurrent()
+    }
+    
     func findStartingPlayer() -> Player {
         return model.findStartingPlayer()
     }

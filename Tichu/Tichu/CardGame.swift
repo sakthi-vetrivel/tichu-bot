@@ -619,17 +619,17 @@ struct Tichu {
         }
     }
     
-//    mutating func activateNextPlayerFromCurrent() {
-//        // Get playerIndex of current player
-//        if let currActivePlayerIndex = players.firstIndex(where: {$0.activePlayer == true}) {
-//            var nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
-//
-//            players[currActivePlayerIndex].activePlayer = false
-//            activatePlayer(players[nextPlayerIndex]))
-//        }
-//
-//
-//    }
+    mutating func activateNextPlayerFromCurrent() {
+        // Get playerIndex of current player
+        if let currActivePlayerIndex = players.firstIndex(where: {$0.activePlayer == true}) {
+            var nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
+
+            players[currActivePlayerIndex].activePlayer = false
+            activatePlayer(players[nextPlayerIndex])
+        }
+
+
+    }
     
     mutating func activatePlayer(_ player: Player) {
         if let playerIndex = players.firstIndex(where:  {$0.id == player.id}) {
@@ -647,6 +647,10 @@ struct Tichu {
                 }
                 playSelectedCard(of: player)
             }
+            else {
+                activateNextPlayerFromCurrent()
+            }
+            
         }
     }
     

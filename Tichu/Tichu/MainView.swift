@@ -15,7 +15,7 @@ struct MainView: View {
             VStack {
                 ForEach(tichu.players) { player in
                     if !player.iAmPlayer {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: -70)]) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 75), spacing: -53)]) {
                             ForEach(player.cards)  {card in
                                 CardView(card: card)
                             }
@@ -26,19 +26,35 @@ struct MainView: View {
                 ZStack {
                     Rectangle()
                         .foregroundColor(Color.yellow)
-                    ForEach(tichu.discardedHands) {
-                        discardHand in LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -5), count: discardHand.hand.count)) {
-                            ForEach(discardHand.hand) { card in
-                                CardView(card: card)
+                    VStack {
+                        ZStack {
+                            ForEach(tichu.discardedHands) {
+                                discardHand in
+                                let i = tichu.discardedHands.firstIndex(where: {$0.id == discardHand.id})
+                                let lastDiscardedHand: Bool = (i == tichu.discardedHands.count - 1)
+                                let previousDiscardedHand: Bool = (i == tichu.discardedHands.count - 2)
+                                LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -30), count: discardHand.hand.count)) {
+                                    ForEach(discardHand.hand) { card in
+                                        CardView(card: card)
+                                    }
+                                }
+                                .scaleEffect(lastDiscardedHand ? 0.8 : 0.65)
+                                .opacity(lastDiscardedHand ? 1 : previousDiscardedHand ? 0.4 : 0)
+                                .offset(y: lastDiscardedHand ? 0 : -40)
                             }
                         }
+                        
+                        let lastIndex = tichu.discardedHands.count - 1
+                        if lastIndex >= 0 {
+                            let playerName = tichu.discardedHands[lastIndex].handOwner.playerName
+                            let playerHand = tichu.discardedHands[lastIndex].hand
+                            let handType = "\(tichu.evaluateHand(playerHand))"
+                            Text("\(playerName): \(handType)")
+                        }
                     }
-                    let playerHand = tichu.players[3].cards.filter{$0.selected == true}
-                    let handType = "\(tichu.evaluateHand(playerHand))"
-                    Text(handType)
                 }
                 let myPlayer = tichu.players[3]
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: -70)]) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: -69)]) {
                     ForEach(myPlayer.cards) { card in
                         CardView(card: card)
                             .offset(y: card.selected ? -30: 0)
@@ -47,10 +63,12 @@ struct MainView: View {
                             }
                     }
                 }
+                Button("Next") {
+                    tichu.activateNextPlayer()
+                }
             }
         }
         .onAppear() {
-            print("On Appear")
             let playerWithOne = tichu.findStartingPlayer()
             tichu.activatePlayer(playerWithOne)
             print(playerWithOne.playerName)

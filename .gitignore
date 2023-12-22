@@ -158,7 +158,7 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
-.DS_Store
+.DS_Store*
 assets/.DS_Store
 assets/svg_playing_cards/.DS_Store
 Tichu/Tichu/.DS_Store
@@ -177,3 +177,6 @@ assets/svg_playing_cards/.DS_Store
 Tichu/Tichu.xcodeproj/project.pbxproj
 Tichu/Tichu.xcodeproj/project.xcworkspace/xcuserdata/svetriv.xcuserdatad/UserInterfaceState.xcuserstate
 tichu-bot/tichu-bot.xcodeproj/project.xcworkspace/xcuserdata/svetriv.xcuserdatad/UserInterfaceState.xcuserstate
+assets/svg_playing_cards/.DS_Store
+.gitignore
+.gitignore

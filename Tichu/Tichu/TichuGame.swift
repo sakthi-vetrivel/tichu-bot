@@ -9,6 +9,7 @@ import Foundation
 
 class TichuGame: ObservableObject {
     @Published private var model = Tichu()
+    @Published private(set) var activePlayer = Player()
     
     var players: [Player] {
         return model.players
@@ -26,16 +27,31 @@ class TichuGame: ObservableObject {
         return HandType(cards)
     }
     
-    func activatePlayer(_ player: Player) {
-        model.activatePlayer(player)
+    func playable(_ hand: Stack, of player: Player) -> Bool {
+        return model.playable(hand, of: player)
     }
     
-    func activateNextPlayer() {
-        model.activateNextPlayerFromCurrent()
+    func activatePlayer(_ player: Player) {
+        model.activatePlayer(player)
+        if let activePlayerIndex = players.firstIndex(where: {$0.activePlayer == true }) {
+            activePlayer = players[activePlayerIndex]
+        }
+    }
+    
+    func getNextPlayer() -> Player {
+        model.getNextPlayerFromCurrent()
     }
     
     func findStartingPlayer() -> Player {
         return model.findStartingPlayer()
+    }
+    
+    func getCPUHand(of player: Player) -> Stack {
+        return model.getCPUHand(of: player)
+    }
+    
+    func playSelectedCard(of player: Player) {
+        model.playSelectedCard(of: player)
     }
 }
 

@@ -9,10 +9,15 @@ import SwiftUI
 
 struct MainView: View {
    @ObservedObject var tichu = TichuGame()
+
+   @State private var counter = 0
+   @State private var buttonText = "Pass"
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
         GeometryReader { geo in
-            VStack {
+            VStack(alignment: .center, spacing: 10) {
                 ForEach(tichu.players) { player in
                     if !player.iAmPlayer {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 75), spacing: -53)]) {
@@ -43,13 +48,13 @@ struct MainView: View {
                                 .offset(y: lastDiscardedHand ? 0 : -40)
                             }
                         }
-                        
-                        let lastIndex = tichu.discardedHands.count - 1
-                        if lastIndex >= 0 {
-                            let playerName = tichu.discardedHands[lastIndex].handOwner.playerName
-                            let playerHand = tichu.discardedHands[lastIndex].hand
-                            let handType = "\(tichu.evaluateHand(playerHand))"
-                            Text("\(playerName): \(handType)")
+//
+//                        let lastIndex = tichu.discardedHands.count - 1
+//                        if lastIndex >= 0 {
+//                            let playerName = tichu.discardedHands[lastIndex].handOwner.playerName
+//                            let playerHand = tichu.discardedHands[lastIndex].hand
+//                            let handType = "\(tichu.evaluateHand(playerHand))"
+//                            Text("\(playerName): \(handType)")
                         }
                     }
                 }
@@ -60,18 +65,58 @@ struct MainView: View {
                             .offset(y: card.selected ? -30: 0)
                             .onTapGesture {
                                 tichu.select(card, in: myPlayer)
+                                let selectedCards = tichu.players[3].cards.filter { $0.selected }
+                                if selectedCards.count > 0 && tichu.playable(selectedCards, of: myPlayer) {
+                                    buttonText = "Play"
+                                }
+                                else {
+                                    buttonText = "Pass"
+                                
                             }
+                        }
                     }
                 }
-                Button("Next") {
-                    tichu.activateNextPlayer()
+                Button(buttonText) {
+                    counter = 0
+                    if buttonText == "Play" {
+                        tichu.playSelectedCard(of: myPlayer)
+                    }
+                }
+                .disabled(myPlayer.activePlayer ? false : true)
+            }
+        }
+        .onChange(of: tichu.activePlayer) { player in
+            print ("Active Player: \(player.playerName)")
+            if !player.iAmPlayer {
+                let cpuHand = tichu.getCPUHand(of: player)
+                if cpuHand.count > 0 {
+                    for i in 0 ... cpuHand.count - 1 {
+                        tichu.select(cpuHand[i], in: player)
+                    }
+                    tichu.playSelectedCard(of: player)
                 }
             }
         }
-        .onAppear() {
-            let playerWithOne = tichu.findStartingPlayer()
-            tichu.activatePlayer(playerWithOne)
-            print(playerWithOne.playerName)
+        .onReceive(timer) { time in
+            var nextPlayer = Player()
+            counter += 1
+            
+            if counter >= 1 {
+                if tichu.discardedHands.count == 0 {
+                    nextPlayer = tichu.findStartingPlayer()
+                }
+                else {
+                    nextPlayer = tichu.getNextPlayer()
+                }
+                tichu.activatePlayer(nextPlayer)
+                if nextPlayer.iAmPlayer {
+                    counter = -100
+                    buttonText = "Pass"
+                }             
+                else {
+                    counter = 0
+                }
+            }
         }
     }
 }

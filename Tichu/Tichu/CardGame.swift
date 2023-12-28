@@ -82,14 +82,12 @@ extension Stack where Element == Card {
             let highestCard = remainingCards.remove(at: highestCardIndex)
             sortedHand.append(highestCard)
         }
-//        print(sortedHand)
         return sortedHand
     }
 
     func generateAllPossibleHands() -> [Stack] {
         var possibleHands = [Stack]()
         // Add all possible single cards
-        print("adding singles")
         for card in self {
             possibleHands.append(Stack([card]))
         }
@@ -303,7 +301,7 @@ extension Rank {
 let specialCards: [Rank] = [.dog, .dragon, .one, .phoenix]
 
 
-struct Player: Identifiable{
+struct Player: Identifiable, Equatable{
     var cards = Stack()
     var playerName = ""
     var iAmPlayer = false
@@ -311,6 +309,12 @@ struct Player: Identifiable{
     var id = UUID()
     var activePlayer = false
     var cardsWon = Stack()
+    
+    // Conformance to Equatable
+    static func ==(lhs: Player, rhs: Player) -> Bool {
+        // Define what makes two Player instances "equal"
+        return lhs.id == rhs.id // For example, two players are equal if their IDs are the same
+    }
 }
 
 struct Deck {
@@ -360,7 +364,7 @@ enum HandType {
             if cards[0].rank == cards[1].rank && cards[1].rank == cards[2].rank {
                 returnType = .ThreeOfAKind
             }
-            var pairExists = cards[0].rank == cards[1].rank || cards[1].rank == cards[2].rank
+            let pairExists = cards[0].rank == cards[1].rank || cards[1].rank == cards[2].rank
             if pairExists && phoenix {
                 returnType = .ThreeOfAKind
             }
@@ -430,11 +434,14 @@ enum HandType {
         
         // Check for straight
         if cards.count >= 5 {
-            // Remove special cards and sort by rank
-            let sortedHand = cards.sortByRank().filter { !$0.rank.isSpecial() }
-            
-            var isFlush = phoenix ? false: true
             var isStraight = true
+            var isFlush = phoenix ? false: true
+            
+            // Remove special cards and sort by rank
+            let sortedHand = cards.sortByRank().filter { $0.rank != .phoenix }
+            if sortedHand.contains(where: { $0.rank == .dog || $0.rank == .dragon}) {
+                isStraight = false
+            }
             
             for i in 0 ..< sortedHand.count - 1 {
                 if isFlush && (sortedHand[i].suit != sortedHand[i+1].suit) {
@@ -476,41 +483,36 @@ struct Tichu {
     private(set) var discardedHands: [DiscardHand]
     private(set) var players: [Player]
     
-    private var activePlayer: Player {
-        var player = Player()
-        if let activePlayerIndex = players.firstIndex(where: {$0.activePlayer == true}) {
-            player = players[activePlayerIndex]
-        } else {
-            if let humanIndex = players.firstIndex(where: {$0.iAmPlayer == true}) {
-                player = players[humanIndex]
-            }
-        }
-        return player
-    }
-    
     func getCPUHand(of player: Player) -> Stack {
-        var validHands = player.cards.generateAllPossibleHands()
+        let validHands = player.cards.generateAllPossibleHands()
         let sortedHandsByScore = sortHandsByScore(validHands)
         var returnHand = Stack()
         
         for hand in sortedHandsByScore {
-            if let lastDiscardedHand = discardedHands.last {
-                if handScore(cards: hand) > handScore(cards: lastDiscardedHand.hand) && HandType(hand) == HandType(lastDiscardedHand.hand)
-                    || (player.id == lastDiscardedHand.handOwner.id) 
-                    || (HandType(hand) == .FourOfAKindBomb || HandType(hand) == .StraightFlushBomb) {
-                    returnHand = hand
-                    break
-                }
-            } else { // First hand of the game
-                if hand.contains(where: {$0.rank == .one}) {
-                    // Play the one
-                    returnHand = hand
-                }
+            if playable(hand, of: player) {
+                returnHand = hand
+                break
             }
         }
-        
         return returnHand 
-        
+    }
+
+    func playable(_ hand: Stack, of player: Player) -> Bool {
+        var playable = false 
+        if let lastDiscardedHand = discardedHands.last {
+            if handScore(cards: hand) > handScore(cards: lastDiscardedHand.hand) && HandType(hand) == HandType(lastDiscardedHand.hand) && hand.count == lastDiscardedHand.hand.count
+                || (player.id == lastDiscardedHand.handOwner.id)
+                || (HandType(hand) == .FourOfAKindBomb || HandType(hand) == .StraightFlushBomb) {
+                playable = true
+            }
+        }
+        else { // First hand of the game
+            if hand.contains(where: {$0.rank == .one}) {
+                // Play the one
+                playable = true
+            }
+         }
+         return playable
     }
 
     func handScore(cards: Stack) -> Int {
@@ -608,7 +610,7 @@ struct Tichu {
     
     mutating func playSelectedCard(of player: Player) {
         if let playerIndex = players.firstIndex(where: {$0.id == player.id}) {
-            var playerHand = players[playerIndex].cards.filter{$0.selected == true}
+            let playerHand = players[playerIndex].cards.filter{$0.selected == true}
             let remainingCards = players[playerIndex].cards.filter{$0.selected == false}
             print(playerHand)
             // Add to set of discarded hands
@@ -619,38 +621,44 @@ struct Tichu {
         }
     }
     
-    mutating func activateNextPlayerFromCurrent() {
+    mutating func getNextPlayerFromCurrent() -> Player {
+        var nextPlayer = Player()
         // Get playerIndex of current player
         if let currActivePlayerIndex = players.firstIndex(where: {$0.activePlayer == true}) {
             var nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
-
+            nextPlayer = players[nextPlayerIndex]
+            while nextPlayer.cards.count == 0 {
+                nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
+                nextPlayer = players[nextPlayerIndex]
+            }
             players[currActivePlayerIndex].activePlayer = false
-            activatePlayer(players[nextPlayerIndex])
+//            activatePlayer(players[nextPlayerIndex])
         }
-
-
+        return nextPlayer
     }
     
     mutating func activatePlayer(_ player: Player) {
         if let playerIndex = players.firstIndex(where:  {$0.id == player.id}) {
             players[playerIndex].activePlayer = true
-        }
-        if !player.iAmPlayer {
-            var cpuHand = getCPUHand(of: player)
-            print("getting CPUHand")
-            print("CPUHand count: \(cpuHand.count)")
-            if cpuHand.count > 0 {
-                print("CPUHand count > 0")
-                for i in 0..<cpuHand.count {
-                    select(cpuHand[i], player: player)
-                    print(cpuHand[i].rank)
-                }
-                playSelectedCard(of: player)
-            }
-            else {
-                activateNextPlayerFromCurrent()
-            }
-            
+        
+//        }
+//        if !player.iAmPlayer {
+//            let cpuHand = getCPUHand(of: player)
+//            print("getting CPUHand")
+//            print("CPUHand count: \(cpuHand.count)")
+//            if cpuHand.count > 0 {
+//                print("CPUHand count > 0")
+//                for i in 0..<cpuHand.count {
+//                    select(cpuHand[i], player: player)
+//                    print(cpuHand[i].rank)
+//                }
+//                playSelectedCard(of: player)
+//            }
+//            else {
+//                // THIS IS WHERE I STOPPED. PLEASE CONT FROM THIS ISSUE
+//                activateNextPlayerFromCurrent()
+//            }
+//
         }
     }
     

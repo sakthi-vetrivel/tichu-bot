@@ -92,6 +92,15 @@ class EvaluateHandTests: XCTestCase {
         XCTAssertNotEqual(handType, .Straight, "Expected not a straight with repeated ranks")
     }
     
+    func testStraightWith1456ph() {
+        let cards = [Card(rank: .one, suit: .clubs), Card(rank: .four, suit: .diamonds),
+                     Card(rank: .phoenix, suit: .spades), Card(rank: .five, suit: .hearts),
+                     Card(rank: .six, suit: .clubs)]
+        let hand: Stack = cards
+        let handType = HandType(hand)
+        XCTAssertNotEqual(handType, .Straight, "Expected not a straight with repeated ranks")
+    }
+    
     func testStraightWithDragon() {
         let cards = [Card(rank: .dragon, suit: .clubs), Card(rank: .jack, suit: .diamonds),
                      Card(rank: .queen, suit: .spades), Card(rank: .king, suit: .hearts),
@@ -117,6 +126,15 @@ class EvaluateHandTests: XCTestCase {
         let hand: Stack = cards
         let handType = HandType(hand)
         XCTAssertNotEqual(handType, .Straight, "Expected a valid hand type but not a straight")
+    }
+    
+    func testNotStraight() {
+        let cards = [Card(rank: .five, suit: .clubs), Card(rank: .six, suit: .diamonds),
+                     Card(rank: .seven, suit: .spades), Card(rank: .ace, suit: .hearts),
+                     Card(rank: .phoenix, suit: .clubs)]
+        let hand: Stack = cards
+        let handType = HandType(hand)
+        XCTAssertNotEqual(handType, .Straight, "phoenix does not complete this straight")
     }
     
     // Test for a valid straight flush bomb

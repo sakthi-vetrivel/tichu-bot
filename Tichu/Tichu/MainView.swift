@@ -48,14 +48,6 @@ struct MainView: View {
                                 .offset(y: lastDiscardedHand ? 0 : -40)
                             }
                         }
-//
-//                        let lastIndex = tichu.discardedHands.count - 1
-//                        if lastIndex >= 0 {
-//                            let playerName = tichu.discardedHands[lastIndex].handOwner.playerName
-//                            let playerHand = tichu.discardedHands[lastIndex].hand
-//                            let handType = "\(tichu.evaluateHand(playerHand))"
-//                            Text("\(playerName): \(handType)")
-                        }
                     }
                 }
                 let myPlayer = tichu.players[3]
@@ -94,6 +86,9 @@ struct MainView: View {
                         tichu.select(cpuHand[i], in: player)
                     }
                     tichu.playSelectedCard(of: player)
+                }
+                else {
+                    tichu.pass(player)
                 }
             }
         }

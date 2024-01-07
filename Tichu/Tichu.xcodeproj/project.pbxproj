@@ -15,6 +15,9 @@
 		6D44479F2A49477A007F0C79 /* CardGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D44479E2A49477A007F0C79 /* CardGame.swift */; };
 		6D4B53012B33003D00CD8459 /* GenerateHands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B53002B33003D00CD8459 /* GenerateHands.swift */; };
 		6D4B53032B36C0AA00CD8459 /* TichuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B53022B36C0AA00CD8459 /* TichuApp.swift */; };
+		6D4B53052B40138900CD8459 /* Stack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B53042B40138900CD8459 /* Stack.swift */; };
+		6D4B53072B4013B600CD8459 /* Tichu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B53062B4013B600CD8459 /* Tichu.swift */; };
+		6D4B53092B40147F00CD8459 /* HandType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D4B53082B40147F00CD8459 /* HandType.swift */; };
 		6D966FF32A4A3CDB000DCEE9 /* TichuGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D966FF22A4A3CDB000DCEE9 /* TichuGame.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,6 +42,9 @@
 		6D44479E2A49477A007F0C79 /* CardGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardGame.swift; sourceTree = "<group>"; };
 		6D4B53002B33003D00CD8459 /* GenerateHands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GenerateHands.swift; path = TichuTests/GenerateHands.swift; sourceTree = "<group>"; };
 		6D4B53022B36C0AA00CD8459 /* TichuApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TichuApp.swift; sourceTree = "<group>"; };
+		6D4B53042B40138900CD8459 /* Stack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stack.swift; sourceTree = "<group>"; };
+		6D4B53062B4013B600CD8459 /* Tichu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tichu.swift; sourceTree = "<group>"; };
+		6D4B53082B40147F00CD8459 /* HandType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandType.swift; sourceTree = "<group>"; };
 		6D966FF22A4A3CDB000DCEE9 /* TichuGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TichuGame.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -72,6 +78,9 @@
 		6D4447812A493DDF007F0C79 = {
 			isa = PBXGroup;
 			children = (
+				6D4B53082B40147F00CD8459 /* HandType.swift */,
+				6D4B53062B4013B600CD8459 /* Tichu.swift */,
+				6D4B53042B40138900CD8459 /* Stack.swift */,
 				6D4B53002B33003D00CD8459 /* GenerateHands.swift */,
 				6D44478C2A493DDF007F0C79 /* Tichu */,
 				6D159E892AA0133100AB611D /* TichuTests */,
@@ -220,9 +229,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D4447902A493DDF007F0C79 /* MainView.swift in Sources */,
+				6D4B53052B40138900CD8459 /* Stack.swift in Sources */,
 				6D966FF32A4A3CDB000DCEE9 /* TichuGame.swift in Sources */,
+				6D4B53092B40147F00CD8459 /* HandType.swift in Sources */,
 				6D44479F2A49477A007F0C79 /* CardGame.swift in Sources */,
 				6D4B53032B36C0AA00CD8459 /* TichuApp.swift in Sources */,
+				6D4B53072B4013B600CD8459 /* Tichu.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

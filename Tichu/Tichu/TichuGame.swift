@@ -53,5 +53,9 @@ class TichuGame: ObservableObject {
     func playSelectedCard(of player: Player) {
         model.playSelectedCard(of: player)
     }
+    
+    func pass(_ player: Player) {
+        model.pass(player)
+    }
 }
 

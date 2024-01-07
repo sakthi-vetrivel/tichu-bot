@@ -209,8 +209,8 @@ struct Tichu {
             // The next player is the one who played the last discarded hand
             let lastDiscardedHandOwner = discardedHands.last?.handOwner
             let lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
-            players[playerIndex].activePlayer = false
-            players[(lastDiscardedHandOwnerIndex! + 1) % players.count].activePlayer = true
+//            players[playerIndex].activePlayer = false
+//            players[(lastDiscardedHandOwnerIndex! + 1) % players.count].activePlayer = true
         }
     }
     
@@ -221,9 +221,9 @@ struct Tichu {
             var nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
             nextPlayer = players[nextPlayerIndex]
             while nextPlayer.cards.isEmpty {
-//                pass(nextPlayer)
-                nextPlayerIndex = (nextPlayerIndex + 1) % players.count
-                nextPlayer = players[nextPlayerIndex]
+               pass(nextPlayer)
+               nextPlayerIndex = (nextPlayerIndex + 1) % players.count
+               nextPlayer = players[nextPlayerIndex]
             }
             players[currActivePlayerIndex].activePlayer = false
         }

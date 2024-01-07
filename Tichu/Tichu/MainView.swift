@@ -28,6 +28,7 @@ struct MainView: View {
                             }
                         }
                         .frame(height: geo.size.height / 6)
+                        .opacity(player.activePlayer ? 1 : 0.4)
                     }
                 }
                 ZStack {
@@ -207,4 +208,11 @@ struct MainView_Previews: PreviewProvider {
     static var previews: some View {
         MainView()
     }
+}
+func calculateSpacing(cardWidth: CGFloat, cardCount: Int, in availableWidth: CGFloat) -> CGFloat {
+    let totalCardWidth = cardWidth * CGFloat(cardCount)
+    let totalSpacingWidth = availableWidth - totalCardWidth
+    let numberOfGaps = CGFloat(cardCount - 1)
+    
+    return max(0, totalSpacingWidth / numberOfGaps) // Ensure spacing is not negative
 }

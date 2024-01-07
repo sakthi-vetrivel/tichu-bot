@@ -135,7 +135,11 @@ struct Tichu {
         while deck.cardsRemaining() > 0 {
             for p in randomStartingPlayerIndex...randomStartingPlayerIndex + (players.count - 1) {
                 let i = p % players.count
-                let card = deck.drawCard()
+                var card = deck.drawCard()
+                // If I am not the player
+                if players[i].iAmPlayer {
+                    card.hidden = false
+                }
                 players[i].cards.append(card)
             }
         }
@@ -152,7 +156,11 @@ struct Tichu {
         while deck.cardsRemaining() > 56 - (players.count * 8) {
             for p in randomStartingPlayerIndex...randomStartingPlayerIndex + (players.count - 1) {
                 let i = p % players.count
-                let card = deck.drawCard()
+                var card = deck.drawCard()
+                // If I am not the player
+                if players[i].iAmPlayer {
+                    card.hidden = false
+                }
                 players[i].cards.append(card)
             }
         }
@@ -174,15 +182,35 @@ struct Tichu {
     }
     
     mutating func playSelectedCard(of player: Player) {
+        // Check if the card is the dog
+
         if let playerIndex = players.firstIndex(where: {$0.id == player.id}) {
+            // First, update the 'hidden' status of the selected cards
+            for i in 0..<players[playerIndex].cards.count {
+                if players[playerIndex].cards[i].selected {
+                    players[playerIndex].cards[i].hidden = false
+                }
+            }
             let playerHand = players[playerIndex].cards.filter{$0.selected == true}
             let remainingCards = players[playerIndex].cards.filter{$0.selected == false}
-            print(playerHand)
             // Add to set of discarded hands
+            
+            // Setting the hidden field to false for all played cards
+            for card in playerHand {
+                if let cardIndex = players[playerIndex].cards.firstIndex(where: { $0.id == card.id }) {
+                    players[playerIndex].cards[cardIndex].hidden = false
+                }
+            }
             discardedHands.append(DiscardHand(hand: playerHand, handOwner: player))
             cardsPlayed.append(contentsOf: playerHand)
             // Update hand to reflect the cards removed
             players[playerIndex].cards = remainingCards
+
+            // The next player is the one who played the last discarded hand
+            let lastDiscardedHandOwner = discardedHands.last?.handOwner
+            let lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
+            players[playerIndex].activePlayer = false
+            players[(lastDiscardedHandOwnerIndex! + 1) % players.count].activePlayer = true
         }
     }
     
@@ -193,6 +221,7 @@ struct Tichu {
             var nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
             nextPlayer = players[nextPlayerIndex]
             while nextPlayer.cards.isEmpty {
+//                pass(nextPlayer)
                 nextPlayerIndex = (nextPlayerIndex + 1) % players.count
                 nextPlayer = players[nextPlayerIndex]
             }
@@ -220,10 +249,11 @@ struct Tichu {
     
     mutating func pass(_ player: Player) {
         // Get the last discarded hand
+        print(player.playerName, " passed.")
         var lastDiscardedHand = discardedHands.last
         // Get the player who played the last discarded hand
         var lastDiscardedHandOwner = lastDiscardedHand?.handOwner
-        // If I am three player away from the last discarded hand owner
+        // If I am three players away from the last discarded hand owner
         var myIndex = players.firstIndex(where: {$0.id == player.id})
         var lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
         if myIndex == (lastDiscardedHandOwnerIndex! + 3) % players.count {
@@ -233,6 +263,7 @@ struct Tichu {
                     lastDiscardedHandOwner!.cardsWon.append(card)
                 }
             }
+            print(lastDiscardedHandOwner!.playerName, " won the hand.")
             // How do we reset the discardedHands, so that the next player can play anything?
             discardedHands.append(DiscardHand(hand: Stack(), handOwner: player))
             // Clear the discarded hands

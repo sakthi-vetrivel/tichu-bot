@@ -16,9 +16,6 @@ struct MainView: View {
    @State private var showDealMoreCardsPopup = false
     
     @State private var timer: Timer.TimerPublisher? = nil
-
-//
-//    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
         GeometryReader { geo in
@@ -53,6 +50,7 @@ struct MainView: View {
                                 .offset(y: lastDiscardedHand ? 0 : -40)
                             }
                         }
+                        
                     }
                 }
                 let myPlayer = tichu.players[3]

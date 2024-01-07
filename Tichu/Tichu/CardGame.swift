@@ -25,17 +25,22 @@ struct Card : Identifiable {
     var rank : Rank
     var suit : Suit
     var filename : String {
-        switch rank {
-        case Rank.dog:
-            return "dog"
-        case Rank.one:
-            return "one"
-        case Rank.phoenix:
-            return "phoenix"
-        case Rank.dragon:
-            return "dragon"
-        default:
-            return "\(suit)" + "_" + "\(rank)"
+        if (!hidden) {
+            switch rank {
+            case Rank.dog:
+                return "dog"
+            case Rank.one:
+                return "one"
+            case Rank.phoenix:
+                return "phoenix"
+            case Rank.dragon:
+                return "dragon"
+            default:
+                return "\(suit)" + "_" + "\(rank)"
+            }
+        }
+        else {
+            return "abstract_clouds"
         }
     }
     var points : Int {
@@ -56,6 +61,7 @@ struct Card : Identifiable {
     }
     var id = UUID()
     var selected = false
+    var hidden : Bool = true
 }
 
 extension Rank {

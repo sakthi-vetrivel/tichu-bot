@@ -57,5 +57,13 @@ class TichuGame: ObservableObject {
     func pass(_ player: Player) {
         model.pass(player)
     }
+    
+    func dealAdditionalCards() {
+        model.dealAdditionalCards()
+    }
+    
+    func dealInitialCards() {
+        model.dealInitialCards()
+    }
 }
 

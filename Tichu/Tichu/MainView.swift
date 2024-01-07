@@ -12,8 +12,13 @@ struct MainView: View {
 
    @State private var counter = 0
    @State private var buttonText = "Pass"
+   // Pop up for Grand Tichu call
+   @State private var showDealMoreCardsPopup = false
     
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @State private var timer: Timer.TimerPublisher? = nil
+
+//
+//    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
         GeometryReader { geo in
@@ -76,6 +81,11 @@ struct MainView: View {
                 }
                 .disabled(myPlayer.activePlayer ? false : true)
             }
+            .onAppear {
+               // Automatically deal initial cards and show the pop-up
+               tichu.dealInitialCards()
+               showDealMoreCardsPopup = true
+            }
         }
         .onChange(of: tichu.activePlayer) { player in
             print ("Active Player: \(player.playerName)")
@@ -92,7 +102,7 @@ struct MainView: View {
                 }
             }
         }
-        .onReceive(timer) { time in
+        .onReceive(timer ?? Timer.publish(every: 1, on: .main, in: .common)) { time in
             var nextPlayer = Player()
             counter += 1
             
@@ -113,6 +123,18 @@ struct MainView: View {
                 }
             }
         }
+        .overlay(
+            Group {
+                if showDealMoreCardsPopup {
+                    DealMoreCardsPopupView(showPopup: $showDealMoreCardsPopup, dealCardsAction: {
+                        tichu.dealAdditionalCards() // Assuming this method deals 6 more cards
+                        // Start the timer
+                        timer = Timer.publish(every: 1, on: .main, in: .common)
+                        timer?.connect()
+                    })
+                }
+            }
+        )
     }
 }
 
@@ -129,6 +151,59 @@ struct CardView: View {
             )
     }
 }
+
+struct DealMoreCardsPopupView: View {
+    @Binding var showPopup: Bool
+    var dealCardsAction: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Text("Grand?")
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(Color.blue)
+
+            Divider()
+
+            Button(action: {
+                dealCardsAction()
+                withAnimation {
+                    showPopup = false
+                }
+            }) {
+                Text("Grand!")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.green)
+                    .cornerRadius(10)
+            }
+
+            Button(action: {
+                dealCardsAction()
+                withAnimation {
+                    showPopup = false
+                }
+            }) {
+                Text("No")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.red)
+                    .cornerRadius(10)
+            }
+            Spacer()
+        }
+        .frame(width: 300, height: 200)
+        .background(Color(.systemBackground)) // Adapts to light/dark mode
+        .cornerRadius(20)
+        .shadow(radius: 10)
+        .transition(.scale)
+    }
+}
+
+
 
 struct MainView_Previews: PreviewProvider {
     static var previews: some View {

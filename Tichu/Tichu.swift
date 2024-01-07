@@ -11,6 +11,7 @@ struct Tichu {
     private(set) var cardsPlayed: Stack
     private(set) var discardedHands: [DiscardHand]
     private(set) var players: [Player]
+    private(set) var deck: Deck
     
     func getCPUHand(of player: Player) -> Stack {
         let validHands = player.cards.generateAllPossibleHands()
@@ -117,7 +118,7 @@ struct Tichu {
         players.append(partner)
         players.append(me)
         
-        var deck = Deck()
+        deck = Deck()
         deck.createFullDeck()
         deck.shuffle()
         cardsPlayed = Stack()
@@ -126,8 +127,29 @@ struct Tichu {
         
         let randomStartingPlayerIndex = Int(arc4random()) % players.count
         
-        // Deal out the cards
+    }
+    
+    mutating func dealAdditionalCards() {
+        let randomStartingPlayerIndex = Int(arc4random()) % players.count
+        
         while deck.cardsRemaining() > 0 {
+            for p in randomStartingPlayerIndex...randomStartingPlayerIndex + (players.count - 1) {
+                let i = p % players.count
+                let card = deck.drawCard()
+                players[i].cards.append(card)
+            }
+        }
+
+        // Sort cards in each player's hand again
+        for (index, _) in players.enumerated() {
+            players[index].cards = players[index].cards.sortByRank()
+        }
+    }
+    
+    mutating func dealInitialCards() {
+        // Deal out the cards
+        let randomStartingPlayerIndex = Int(arc4random()) % players.count
+        while deck.cardsRemaining() > 56 - (players.count * 8) {
             for p in randomStartingPlayerIndex...randomStartingPlayerIndex + (players.count - 1) {
                 let i = p % players.count
                 let card = deck.drawCard()
@@ -139,6 +161,7 @@ struct Tichu {
             players[index].cards = players[index].cards.sortByRank()
         }
     }
+
     
     mutating func select(_ card: Card, player: Player) {
         if let cardIndex = player.cards.firstIndex(where:  { $0.id == card.id}) {

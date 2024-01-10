@@ -26,6 +26,11 @@ struct MainView: View {
                             ForEach(player.cards)  {card in
                                 CardView(card: card)
                             }
+                            // Add an outline if the player is the active player
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 5)
+                                .stroke(player.activePlayer ? Color.white : Color.clear, lineWidth: 3)
+                            )
                         }
                         .frame(height: geo.size.height / 6)
                         .opacity(player.activePlayer ? 1 : 0.4)

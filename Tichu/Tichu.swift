@@ -73,12 +73,29 @@ struct Tichu {
                 if let lastSingle = discardedHands.last?.hand.last {
                     // if the last single was a dragon, we cannot play the phoenix
                     if lastSingle.rank != .dragon {
-                        score = 2*(lastSingle.rank.rawValue) + 1 //Phoenix is 0.5 higher than the previous single card played
+                        if lastSingle.rank != .phoenix {
+                            score = 2*(lastSingle.rank.rawValue) + 1 //Phoenix is 0.5 higher than the previous single card played
+                        }
+                        // The last single was the phoenix, and we are trying to see if a card can be played on top of it
+                        else {
+                            // If this phoenix was played on top of another card
+                            if discardedHands.count > 1 {
+                                if let lastSingle = discardedHands[discardedHands.count - 2].hand.last {
+                                    score = 2*(lastSingle.rank.rawValue) + 1
+                                }
+                            }
+                            // Otherwise, the phoenix was played on an empty playing field
+                            else {
+                                score = 1
+                            }
+                        }
                     }
+                    // The last single was a dragon, so we want to calculate a low score to show that nothing can be played on the dragon
                     else {
                         score = 0
                     }
                 }
+            // If none of the special cases apply
             } else {
                 score = 2*cards[0].rank.rawValue
             }

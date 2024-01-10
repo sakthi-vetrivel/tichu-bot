@@ -187,8 +187,7 @@ struct DealMoreCardsPopupView: View {
                 Text("Grand!")
                     .foregroundColor(.white)
                     .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.green)
+                    .background(Color.blue)
                     .cornerRadius(10)
             }
 
@@ -201,7 +200,6 @@ struct DealMoreCardsPopupView: View {
                 Text("No")
                     .foregroundColor(.white)
                     .padding()
-                    .frame(maxWidth: .infinity)
                     .background(Color.red)
                     .cornerRadius(10)
             }

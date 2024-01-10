@@ -44,7 +44,6 @@ extension Stack where Element == Card {
         possibleHands.append(contentsOf: self.generateStraights())
         possibleHands.append(contentsOf: self.generateStairs())
         possibleHands.append(contentsOf: self.generateFullHouses())
-        print("Number of possible hands for this player: ", possibleHands.count)
         return possibleHands
     }
 

@@ -132,6 +132,8 @@ struct Deck {
 
 }
 
+// A discard hand is one set of cards played in a trick.
+// This keeps track of the cards that are played together and the player who played these cards
 struct DiscardHand : Identifiable {
     var hand: Stack
     var handOwner: Player

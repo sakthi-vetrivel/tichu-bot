@@ -6,16 +6,27 @@
 //
 import Foundation
 
+enum GameState {
+    case ongoing
+    case finished
+}
+
 struct Tichu {
     // Keep track of all cards that have been used
     private(set) var cardsPlayed: Stack
+    // Keep track of the hands that have been played
     private(set) var discardedHands: [DiscardHand]
+    // Players for the game
     private(set) var players: [Player]
+    // Deck of cards
     private(set) var deck: Deck
+    // Keep track of gamestate
+    private(set) var gameState: GameState = .ongoing
     
+    // Given the hand of a player, generate the CPU's hand to play
     func getCPUHand(of player: Player) -> Stack {
         let validHands = player.cards.generateAllPossibleHands()
-        let sortedHandsByScore = sortHandsByScore(validHands)
+        let sortedHandsByScore = sortHandsByScore(validHands).reversed()
         var returnHand = Stack()
         
         for hand in sortedHandsByScore {
@@ -129,6 +140,12 @@ struct Tichu {
         
     }
     
+    mutating func checkForEndGame() -> Bool {
+        let playersWithCards = players.filter { !$0.cards.isEmpty }
+        return playersWithCards.count <= 1
+    }
+
+    
     mutating func dealAdditionalCards() {
         let randomStartingPlayerIndex = Int(arc4random()) % players.count
         
@@ -209,8 +226,6 @@ struct Tichu {
             // The next player is the one who played the last discarded hand
             let lastDiscardedHandOwner = discardedHands.last?.handOwner
             let lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
-//            players[playerIndex].activePlayer = false
-//            players[(lastDiscardedHandOwnerIndex! + 1) % players.count].activePlayer = true
         }
     }
     
@@ -249,7 +264,6 @@ struct Tichu {
     
     mutating func pass(_ player: Player) {
         // Get the last discarded hand
-        print(player.playerName, " passed.")
         var lastDiscardedHand = discardedHands.last
         // Get the player who played the last discarded hand
         var lastDiscardedHandOwner = lastDiscardedHand?.handOwner
@@ -257,18 +271,55 @@ struct Tichu {
         var myIndex = players.firstIndex(where: {$0.id == player.id})
         var lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
         if myIndex == (lastDiscardedHandOwnerIndex! + 3) % players.count {
+            // If the discarded hand  was not an empty placeholder and was won with the dragon
+            if lastDiscardedHand?.hand.count ?? 0 > 0 && lastDiscardedHand?.hand[0].rank == .dragon {
+                giveAwayDragonCards()
+            }
             // All of the discarded cards go to the owner of the last discarded hand
             for discardHand in discardedHands {
+                print("\(lastDiscardedHandOwner?.playerName) has won these cards: \(discardHand.hand)")
                 for card in discardHand.hand {
-                    lastDiscardedHandOwner!.cardsWon.append(card)
+                    players[lastDiscardedHandOwnerIndex!].cardsWon.append(card)
                 }
             }
+            print(player.playerName, " was the last player to pass")
             print(lastDiscardedHandOwner!.playerName, " won the hand.")
-            // How do we reset the discardedHands, so that the next player can play anything?
+            // Reset the discardedHands, so that the next player can play anything?
+            // Empty the discardedHands array
+            discardedHands = []
             discardedHands.append(DiscardHand(hand: Stack(), handOwner: player))
-            // Clear the discarded hands
-                
+            
+            if checkForEndGame() {
+                endGame()
+            }
         }
+    }
+
+    // Open popup to give cards to an opponent player
+    // Give cards to weak player
+    func giveAwayDragonCards() {
+        // Pass in the owner of the last discarded hand owner
+//        if (lastDiscardedHandOwner == players.firstIndex(where: $0.iAmPlayer)) {
+//        }
+        return
+    }
+
+    func endGame() {
+        // Tally the points of all of the players
+        for player in players {
+            var points = 0
+            for card in player.cardsWon {
+                points += card.points
+            }
+            print("--------------------------------------------------------------------GAME END")
+            print (player.playerName, ": ", points)
+        }
+        // Based on the finish order, the points go to other players as well
+        // Do I need to reset everything or does that happen when you start a new game
+        
+        // Open popup to ask to play again
+        // Implement what happens when the game ends
+        // This could be setting a game over flag, showing a message, etc.
     }
 }
 

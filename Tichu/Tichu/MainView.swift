@@ -33,7 +33,7 @@ struct MainView: View {
                 }
                 ZStack {
                     Rectangle()
-                        .foregroundColor(Color.yellow)
+                        .foregroundColor(Color.gray)
                     VStack {
                         ZStack {
                             ForEach(tichu.discardedHands) {
@@ -72,6 +72,8 @@ struct MainView: View {
                         }
                     }
                 }
+                .disabled(!myPlayer.activePlayer)
+                
                 Button(buttonText) {
                     counter = 0
                     if buttonText == "Play" {
@@ -80,16 +82,20 @@ struct MainView: View {
                 }
                 .disabled(myPlayer.activePlayer ? false : true)
             }
+            .background(Color.black)
             .onAppear {
                // Automatically deal initial cards and show the pop-up
                tichu.dealInitialCards()
                showDealMoreCardsPopup = true
             }
         }
+        
+        // When the active player is changed, we want them to play
         .onChange(of: tichu.activePlayer) { player in
-            print ("Active Player: \(player.playerName)")
             if !player.iAmPlayer {
+                // Get the CPU Hand of the player
                 let cpuHand = tichu.getCPUHand(of: player)
+                // Play their hand or pass
                 if cpuHand.count > 0 {
                     for i in 0 ... cpuHand.count - 1 {
                         tichu.select(cpuHand[i], in: player)
@@ -101,6 +107,8 @@ struct MainView: View {
                 }
             }
         }
+        
+        // Every second, the next computer player makes their move. We trigger this by changing the active player
         .onReceive(timer ?? Timer.publish(every: 1, on: .main, in: .common)) { time in
             var nextPlayer = Player()
             counter += 1
@@ -201,6 +209,12 @@ struct DealMoreCardsPopupView: View {
         .transition(.scale)
     }
 }
+
+// Tichu Bet view
+
+// Dragon Cards view
+
+// Game End View
 
 
 

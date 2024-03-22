@@ -85,7 +85,7 @@ struct MainView: View {
                         tichu.playSelectedCard(of: myPlayer)
                     }
                 }
-                .disabled(myPlayer.activePlayer ? false : true)
+                .disabled(myPlayer.activePlayer && !myPlayer.cards.contains(where: { $0.rank == .one }) ? false : true)
             }
             .background(Color.black)
             .onAppear {

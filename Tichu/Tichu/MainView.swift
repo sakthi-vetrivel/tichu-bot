@@ -77,7 +77,6 @@ struct MainView: View {
                         }
                     }
                 }
-                .disabled(!myPlayer.activePlayer)
                 
                 Button(buttonText) {
                     counter = 0
@@ -85,7 +84,7 @@ struct MainView: View {
                         tichu.playSelectedCard(of: myPlayer)
                     }
                 }
-                .disabled(myPlayer.activePlayer && !myPlayer.cards.contains(where: { $0.rank == .one }) ? false : true)
+                .disabled(myPlayer.activePlayer ? false : true)
             }
             .background(Color.black)
             .onAppear {

@@ -61,7 +61,7 @@ struct Card : Identifiable {
     }
     var id = UUID()
     var selected = false
-    var hidden : Bool = true
+    var hidden : Bool = false
 }
 
 extension Rank {

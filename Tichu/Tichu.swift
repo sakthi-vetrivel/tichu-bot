@@ -22,6 +22,8 @@ struct Tichu {
     private(set) var deck: Deck
     // Keep track of gamestate
     private(set) var gameState: GameState = .ongoing
+    // Keep track of player finish order
+    private(set) var finishedPlayerOrder: [Player] = []
     
     // Given the hand of a player, generate the CPU's hand to play
     func getCPUHand(of player: Player) -> Stack {
@@ -136,14 +138,15 @@ struct Tichu {
     
     init() {
         let opponents = [
-            Player(playerName: "Player1"),
-            Player(playerName: "Player2")
+            Player(playerName: "Alex"),
+            Player(playerName: "Chris")
         ]
-        let partner = Player(playerName: "Player3", isPartner: true )
+        let partner = Player(playerName: "Becky", isPartner: true )
         let me = Player(playerName: "Me", iAmPlayer: true)
         
-        players = opponents
+        players = [opponents[0]]
         players.append(partner)
+        players.append(opponents[1])
         players.append(me)
         
         deck = Deck()
@@ -151,9 +154,6 @@ struct Tichu {
         deck.shuffle()
         cardsPlayed = Stack()
         discardedHands = [DiscardHand]()
-        
-        
-        let randomStartingPlayerIndex = Int(arc4random()) % players.count
         
     }
     
@@ -216,7 +216,6 @@ struct Tichu {
     }
     
     mutating func playSelectedCard(of player: Player) {
-        // Check if the card is the dog
 
         if let playerIndex = players.firstIndex(where: {$0.id == player.id}) {
             // First, update the 'hidden' status of the selected cards
@@ -239,10 +238,7 @@ struct Tichu {
             cardsPlayed.append(contentsOf: playerHand)
             // Update hand to reflect the cards removed
             players[playerIndex].cards = remainingCards
-
-            // The next player is the one who played the last discarded hand
-            let lastDiscardedHandOwner = discardedHands.last?.handOwner
-            let lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
+            
         }
     }
     
@@ -250,12 +246,29 @@ struct Tichu {
         var nextPlayer = Player()
         // Get playerIndex of current player
         if let currActivePlayerIndex = players.firstIndex(where: {$0.activePlayer == true}) {
-            var nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
-            nextPlayer = players[nextPlayerIndex]
-            while nextPlayer.cards.isEmpty {
-               pass(nextPlayer)
-               nextPlayerIndex = (nextPlayerIndex + 1) % players.count
-               nextPlayer = players[nextPlayerIndex]
+            
+            let currentPlayer = players[currActivePlayerIndex]
+            if let lastDiscardedHand = discardedHands.last,
+               // Check if the current player played the Dog card
+               lastDiscardedHand.hand.contains(where: { $0.rank == Rank.dog }) {
+                // Dog card was played, pass turn to partner
+                let partnerIndex = (currActivePlayerIndex + 2) % players.count
+                nextPlayer = players[partnerIndex]
+                
+                // We model this pass as the partner winning the trick
+                // Reset the discardedHands, so that the next player can play anything
+                // Empty the discardedHands array
+                discardedHands = []
+                discardedHands.append(DiscardHand(hand: Stack(), handOwner: nextPlayer))
+            } else {
+                // Normal turn progression
+                var nextPlayerIndex = (currActivePlayerIndex + 1) % players.count
+                nextPlayer = players[nextPlayerIndex]
+                while nextPlayer.cards.isEmpty {
+                    pass(nextPlayer)
+                    nextPlayerIndex = (nextPlayerIndex + 1) % players.count
+                    nextPlayer = players[nextPlayerIndex]
+                }
             }
             players[currActivePlayerIndex].activePlayer = false
         }
@@ -281,12 +294,12 @@ struct Tichu {
     
     mutating func pass(_ player: Player) {
         // Get the last discarded hand
-        var lastDiscardedHand = discardedHands.last
+        let lastDiscardedHand = discardedHands.last
         // Get the player who played the last discarded hand
-        var lastDiscardedHandOwner = lastDiscardedHand?.handOwner
+        let lastDiscardedHandOwner = lastDiscardedHand?.handOwner
         // If I am three players away from the last discarded hand owner
-        var myIndex = players.firstIndex(where: {$0.id == player.id})
-        var lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
+        let myIndex = players.firstIndex(where: {$0.id == player.id})
+        let lastDiscardedHandOwnerIndex = players.firstIndex(where: {$0.id == lastDiscardedHandOwner?.id})
         if myIndex == (lastDiscardedHandOwnerIndex! + 3) % players.count {
             // If the discarded hand  was not an empty placeholder and was won with the dragon
             if lastDiscardedHand?.hand.count ?? 0 > 0 && lastDiscardedHand?.hand[0].rank == .dragon {
@@ -294,14 +307,12 @@ struct Tichu {
             }
             // All of the discarded cards go to the owner of the last discarded hand
             for discardHand in discardedHands {
-                print("\(lastDiscardedHandOwner?.playerName) has won these cards: \(discardHand.hand)")
+                print("\(String(describing: lastDiscardedHandOwner?.playerName ?? "Unknown")) has won these cards: \(discardHand.hand)")
                 for card in discardHand.hand {
                     players[lastDiscardedHandOwnerIndex!].cardsWon.append(card)
                 }
             }
-            print(player.playerName, " was the last player to pass")
-            print(lastDiscardedHandOwner!.playerName, " won the hand.")
-            // Reset the discardedHands, so that the next player can play anything?
+            // Reset the discardedHands, so that the next player can play anything
             // Empty the discardedHands array
             discardedHands = []
             discardedHands.append(DiscardHand(hand: Stack(), handOwner: player))
@@ -310,6 +321,25 @@ struct Tichu {
                 endGame()
             }
         }
+    }
+    
+    mutating func handleDogCard(player: Player) {
+        // Find the partner of the player who played the Dog card
+        if let playerIndex = players.firstIndex(where: { $0.id == player.id }) {
+            let partnerIndex = (playerIndex + 2) % players.count
+            // Set the partner as the next active player
+            players[playerIndex].activePlayer = false
+            players[partnerIndex].activePlayer = true
+            print("\(player.playerName) played the dog card. \(players[partnerIndex].playerName) is now the active player.")
+        }
+    }
+
+    func findPartner(of player: Player) -> Player {
+        // Find the partner of the given player
+        // The partner is the player two indices apart from this player
+        let playerIndex = players.firstIndex(where: {$0.id == player.id})
+        let partnerIndex = (playerIndex! + 2) % players.count
+        return players[partnerIndex]
     }
 
     // Open popup to give cards to an opponent player

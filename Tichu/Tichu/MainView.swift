@@ -19,125 +19,134 @@ struct MainView: View {
     
     var body: some View {
         GeometryReader { geo in
-            ZStack {
-                // Top row of cards representing the partner player
-                VStack(alignment: .center, spacing: 10) {
-                    let player = tichu.players[1]
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 75), spacing: -53)]) {
-                        ForEach(player.cards) { card in
-                            CardView(card: card)
-                        }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 5)
-                                .stroke(player.activePlayer ? Color.white : Color.clear, lineWidth: 3)
-                        )
-                    }
-                    .frame(height: geo.size.height / 6)
-                    .opacity(player.activePlayer ? 1 : 0.4)
-                    .rotationEffect(.degrees(180))
-                    
+            VStack(spacing: 0) {
+                // Top Zone
+                HStack {
                     Spacer()
+                    let topPlayer = tichu.players[1]
+                    HStack(spacing: -30) { // Adjusted spacing to prevent overflow
+                        ForEach(topPlayer.cards) { card in
+                            CardView(card: card)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 5)
+                                        .stroke(topPlayer.activePlayer ? Color.white : Color.clear, lineWidth: 3)
+                                )
+                        }
+                    }
+                    .frame(height: geo.size.height / 6 - 20)
+                    .background(Color.red)
+                    .padding(10)
+                    Spacer()
+                }
+                
+
+                HStack(spacing: 0) {
+                    // Left Zone
+                    VStack {
+                        Spacer()
+                        let leftPlayer = tichu.players[2]
+                        HStack(spacing: -20) { // Adjusted spacing to prevent overflow
+                            ForEach(leftPlayer.cards) { card in
+                                CardView(card: card)
+                                    .frame(width: geo.size.height * 2/3 / 13)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .stroke(leftPlayer.activePlayer ? Color.white : Color.clear, lineWidth: 3)
+                                    )
+                            }
+                        }
+                        .rotationEffect(.degrees(90))
+                        .frame(width: geo.size.width / 5)
+                        .frame(height: geo.size.height * 1 / 3 - 20)
+                        
+                        Spacer()
+                    }
+                    .frame(maxHeight: .infinity)
+                    .padding(.vertical, 10)
                     
-                    // Area for discarded hands
-                    ZStack {
-                        VStack {
-                            ZStack {
-                                ForEach(tichu.discardedHands) { discardHand in
-                                    let i = tichu.discardedHands.firstIndex(where: { $0.id == discardHand.id })
-                                    let lastDiscardedHand: Bool = (i == tichu.discardedHands.count - 1)
-                                    let previousDiscardedHand: Bool = (i == tichu.discardedHands.count - 2)
-                                    LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -30), count: discardHand.hand.count)) {
-                                        ForEach(discardHand.hand) { card in
-                                            CardView(card: card)
+                    // Center Zone
+                    VStack {
+                        Spacer()
+                        ZStack {
+                            VStack {
+                                ZStack {
+                                    ForEach(tichu.discardedHands) { discardHand in
+                                        let i = tichu.discardedHands.firstIndex(where: { $0.id == discardHand.id })
+                                        let lastDiscardedHand: Bool = (i == tichu.discardedHands.count - 1)
+                                        let previousDiscardedHand: Bool = (i == tichu.discardedHands.count - 2)
+                                        LazyVGrid(columns: Array(repeating: GridItem(.fixed(100), spacing: -30), count: discardHand.hand.count)) {
+                                            ForEach(discardHand.hand) { card in
+                                                CardView(card: card)
+                                            }
                                         }
+                                        .scaleEffect(lastDiscardedHand ? 0.8 : 0.65)
+                                        .opacity(lastDiscardedHand ? 1 : previousDiscardedHand ? 0.4 : 0)
+                                        .offset(y: lastDiscardedHand ? 0 : -40)
                                     }
-                                    .scaleEffect(lastDiscardedHand ? 0.8 : 0.65)
-                                    .opacity(lastDiscardedHand ? 1 : previousDiscardedHand ? 0.4 : 0)
-                                    .offset(y: lastDiscardedHand ? 0 : -40)
                                 }
                             }
                         }
+                        .frame(width: geo.size.width * 3 / 5, height: geo.size.height * 1 / 3)
+                        Spacer()
                     }
-                    .frame(height: geo.size.height / 6)
+                    .frame(maxHeight: .infinity)
                     
-                    Spacer()
-                    
-                    // Bottom row of cards
-                    let myPlayer = tichu.players[3]
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: -69)]) {
-                        ForEach(myPlayer.cards) { card in
-                            CardView(card: card)
-                                .frame(width: 75, height: 120)
-                                .offset(y: card.selected ? -30 : 0)
-                                .onTapGesture {
-                                    tichu.select(card, in: myPlayer)
-                                    let selectedCards = tichu.players[3].cards.filter { $0.selected }
-                                    if selectedCards.count > 0 && tichu.playable(selectedCards, of: myPlayer) {
-                                        buttonText = "Play"
-                                    } else {
-                                        buttonText = "Pass"
-                                    }
-                                }
+                    // Right Zone
+                    VStack {
+                        Spacer()
+                        let leftPlayer = tichu.players[0]
+                        HStack(spacing: -20) { // Adjusted spacing to prevent overflow
+                            ForEach(leftPlayer.cards) { card in
+                                CardView(card: card)
+                                    .frame(width: geo.size.height * 2/3 / 13)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .stroke(leftPlayer.activePlayer ? Color.white : Color.clear, lineWidth: 3)
+                                    )
+                            }
                         }
+                        .rotationEffect(.degrees(-90))
+                        .frame(width: geo.size.width / 5)
+                        .frame(height: geo.size.height * 1 / 3 - 20)
+                        Spacer()
                     }
-                    .frame(height: geo.size.height / 6)
-                    
-                    // Button under the bottom row of cards
-                    Button(buttonText) {
-                        counter = 0
-                        if buttonText == "Play" {
-                            tichu.playSelectedCard(of: myPlayer)
-                        }
-                    }
-                    .disabled(myPlayer.activePlayer ? false : true)
+                    .frame(maxHeight: .infinity)
+                    .padding(.vertical, 10)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.bottom, 20) // Adjust padding as needed for the button
-                
-                // Left and right row of cards
                 HStack {
                     VStack {
-                        let player = tichu.players[2]
-                        HStack(spacing: -53) {
-                            ForEach(player.cards) { card in
+                        let myPlayer = tichu.players[3]
+                        HStack(spacing: -69) {
+                            ForEach(myPlayer.cards) { card in
                                 CardView(card: card)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 5)
-                                            .stroke(player.activePlayer ? Color.white : Color.clear, lineWidth: 3)
-                                    )
+                                    .offset(y: card.selected ? -30: 0)
+                                    .onTapGesture {
+                                        tichu.select(card, in: myPlayer)
+                                        let selectedCards = tichu.players[3].cards.filter { $0.selected }
+                                        if selectedCards.count > 0 && tichu.playable(selectedCards, of: myPlayer) {
+                                            buttonText = "Play"
+                                        }
+                                        else {
+                                            buttonText = "Pass"
+                                            
+                                        }
+                                    }
                             }
                         }
-                        .opacity(player.activePlayer ? 1 : 0.4)
-                        .frame(width: geo.size.width) // Ensure it takes up the full height
-                        .frame(maxHeight: geo.size.height * 1/4) // Adjust width as needed
+                        .frame(height: geo.size.height / 3 - 20)
+                        .padding(10)
                         
-                    }
-                    .frame(maxHeight: geo.size.height * 1/4) // Adjust width as needed
-                    .rotationEffect(.degrees(90)) // Rotating for left view
-                    
-                    Spacer()
-                    
-                    VStack {
-                        let player = tichu.players[0]
-                        HStack(spacing: -53) {
-                            ForEach(player.cards) { card in
-                                CardView(card: card)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 5)
-                                            .stroke(player.activePlayer ? Color.white : Color.clear, lineWidth: 3)
-                                    )
+                        Button(buttonText) {
+                            counter = 0
+                            if buttonText == "Play" {
+                                tichu.playSelectedCard(of: myPlayer)
                             }
                         }
-                        .opacity(player.activePlayer ? 1 : 0.4)
-                        .rotationEffect(.degrees(-90)) // Rotating for right view
-                        .frame(width: geo.size.width) // Adjust width as needed
-                        .frame(maxHeight: geo.size.height * 1/4) // Adjust width as needed
+                        .disabled(myPlayer.activePlayer ? false : true)
                     }
-                    .frame(maxHeight: geo.size.height * 1/2) // Ensure it takes up the full height
                 }
-                .frame(maxWidth: geo.size.width)
-                .frame(maxHeight: geo.size.height * 1/2) // Ensure the HStack takes up the full height of the screen
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.black)
                 .onAppear {
                     // Automatically deal initial cards and show the pop-up

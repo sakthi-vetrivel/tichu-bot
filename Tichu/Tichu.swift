@@ -41,7 +41,10 @@ struct Tichu {
     }
 
     func playable(_ hand: Stack, of player: Player) -> Bool {
-        var playable = false
+        let type = HandType(hand)
+        if type == .Invalid {
+             return false
+        }
         
         // Check if the player has the "one" card
         let hasOneCard = player.cards.contains(where: { $0.rank == .one })
@@ -53,18 +56,18 @@ struct Tichu {
         if let lastDiscardedHand = discardedHands.last {
             // If the lastDiscardedHand includes no cards, it was resetting the table, so anything is playable
             if lastDiscardedHand.hand.isEmpty {
-                playable = true
+                return true
             }
             else if handScore(cards: hand) > handScore(cards: lastDiscardedHand.hand) &&
                 HandType(hand) == HandType(lastDiscardedHand.hand) &&
                 hand.count == lastDiscardedHand.hand.count ||
                 player.id == lastDiscardedHand.handOwner.id ||
                 HandType(hand) == .FourOfAKindBomb || HandType(hand) == .StraightFlushBomb {
-                playable = true
+                return true
             }
        }
         
-        return playable
+        return false
     }
 
     func handScore(cards: Stack) -> Int {

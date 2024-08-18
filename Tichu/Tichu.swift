@@ -226,7 +226,6 @@ struct Tichu {
             }
             let playerHand = players[playerIndex].cards.filter{$0.selected == true}
             let remainingCards = players[playerIndex].cards.filter{$0.selected == false}
-            // Add to set of discarded hands
             
             // Setting the hidden field to false for all played cards
             for card in playerHand {
@@ -234,10 +233,16 @@ struct Tichu {
                     players[playerIndex].cards[cardIndex].hidden = false
                 }
             }
+            // Add to set of discarded hands
             discardedHands.append(DiscardHand(hand: playerHand, handOwner: player))
             cardsPlayed.append(contentsOf: playerHand)
             // Update hand to reflect the cards removed
             players[playerIndex].cards = remainingCards
+
+            // Check if the player has finished
+            if players[playerIndex].cards.isEmpty && !finishedPlayerOrder.contains(where: { $0.id == player.id }) {
+                finishedPlayerOrder.append(players[playerIndex])
+            }
             
         }
     }
@@ -352,21 +357,54 @@ struct Tichu {
     }
 
     func endGame() {
-        // Tally the points of all of the players
+        var team1Points = 0
+        var team2Points = 0
+
+        // Tally the points of all players
         for player in players {
             var points = 0
             for card in player.cardsWon {
                 points += card.points
             }
+            
+            // Check finish order to apply Tichu/Grand Tichu points
+            if let finishedIndex = finishedPlayerOrder.firstIndex(where: { $0.id == player.id }) {
+                if finishedIndex == 0 && player.declaredTichu {
+                    // Player finished first and declared Tichu/Grand Tichu
+                    let tichuPoints = player.declaredGrandTichu ? 200 : 100
+                    points += tichuPoints
+                } else if player.declaredTichu {
+                    // Player did not finish first but declared Tichu/Grand Tichu
+                    let tichuPoints = player.declaredGrandTichu ? 200 : 100
+                    points -= tichuPoints
+                }
+            }
+
             print("--------------------------------------------------------------------GAME END")
-            print (player.playerName, ": ", points)
+            print("\(player.playerName): \(points) points")
+
+            // Accumulate team points
+            if player.isPartner { // Assuming isPartner identifies team1
+                team1Points += points
+            } else {
+                team2Points += points
+            }
         }
-        // Based on the finish order, the points go to other players as well
-        // Do I need to reset everything or does that happen when you start a new game
         
+        // Display final team scores
+        print("Team 1 Total Points: \(team1Points)")
+        print("Team 2 Total Points: \(team2Points)")
+        
+        let winningTeam = team1Points > team2Points ? "Team 1" : "Team 2"
+        print("\(winningTeam) wins the game!")
+        
+        // Reset game state or prepare for a new game
+        // e.g., reset player states, clear cards, etc.
+        // This depends on how your game state is managed
+
         // Open popup to ask to play again
-        // Implement what happens when the game ends
-        // This could be setting a game over flag, showing a message, etc.
+        // Trigger UI for end-of-game options
     }
+
 }
 

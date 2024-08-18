@@ -96,6 +96,8 @@ struct Player: Identifiable, Equatable{
     var id = UUID()
     var activePlayer = false
     var cardsWon = Stack()
+    var declaredTichu: Bool = false
+    var declaredGrandTichu: Bool = false
     
     // Conformance to Equatable
     static func ==(lhs: Player, rhs: Player) -> Bool {

@@ -43,6 +43,13 @@ struct Tichu {
     func playable(_ hand: Stack, of player: Player) -> Bool {
         var playable = false
         
+        // Check if the player has the "one" card
+        let hasOneCard = player.cards.contains(where: { $0.rank == .one })
+        if hasOneCard {
+            // If the player has the "one" card, they must play at least one card, so any hand is playable
+            return !hand.isEmpty
+        }
+        
         if let lastDiscardedHand = discardedHands.last {
             // If the lastDiscardedHand includes no cards, it was resetting the table, so anything is playable
             if lastDiscardedHand.hand.isEmpty {
@@ -55,13 +62,7 @@ struct Tichu {
                 HandType(hand) == .FourOfAKindBomb || HandType(hand) == .StraightFlushBomb {
                 playable = true
             }
-        } else { // First hand of the game
-            if hand.contains(where: { $0.rank == .one }) {
-                // Play the one
-                playable = true
-            }
-        }
-        
+
         return playable
     }
 
@@ -170,6 +171,7 @@ struct Tichu {
             return false
         }
     }
+
 
     
     mutating func dealAdditionalCards() {

@@ -360,50 +360,76 @@ struct Tichu {
         var team1Points = 0
         var team2Points = 0
 
-        // Tally the points of all players
-        for player in players {
-            var points = 0
-            for card in player.cardsWon {
-                points += card.points
-            }
-            
-            // Check finish order to apply Tichu/Grand Tichu points
-            if let finishedIndex = finishedPlayerOrder.firstIndex(where: { $0.id == player.id }) {
-                if finishedIndex == 0 && player.declaredTichu {
-                    // Player finished first and declared Tichu/Grand Tichu
-                    let tichuPoints = player.declaredGrandTichu ? 200 : 100
-                    points += tichuPoints
-                } else if player.declaredTichu {
-                    // Player did not finish first but declared Tichu/Grand Tichu
-                    let tichuPoints = player.declaredGrandTichu ? 200 : 100
-                    points -= tichuPoints
-                }
-            }
-
-            print("--------------------------------------------------------------------GAME END")
-            print("\(player.playerName): \(points) points")
-
-            // Accumulate team points
-            if player.isPartner { // Assuming isPartner identifies team1
-                team1Points += points
-            } else {
-                team2Points += points
-            }
+        // Calculate points for finishing order
+        let team1FinishedFirstAndSecond = finishedPlayerOrder.prefix(2).allSatisfy { player in
+            guard let index = players.firstIndex(of: player) else { return false }
+            return index == 1 || index == 3
         }
         
+        let team2FinishedFirstAndSecond = finishedPlayerOrder.prefix(2).allSatisfy { player in
+            guard let index = players.firstIndex(of: player) else { return false }
+            return index == 0 || index == 2
+        }
+
+        // If a team finishes 1-2, award points accordingly
+        if team1FinishedFirstAndSecond {
+            team1Points = 200 + pointsForFirstPlayer(finishedPlayerOrder.first)
+        } else if team2FinishedFirstAndSecond {
+            team2Points = 200 + pointsForFirstPlayer(finishedPlayerOrder.first)
+        } else {
+            // Calculate base card points and apply Tichu/Grand Tichu points
+            for player in players {
+                let points = basePoints(for: player) + tichuPoints(for: player, finishOrder: finishedPlayerOrder)
+                if isTeam1Player(player) {
+                    team1Points += points
+                } else {
+                    team2Points += points
+                }
+            }
+        }
+
         // Display final team scores
+        displayFinalScores(team1Points: team1Points, team2Points: team2Points)
+    }
+
+    private func pointsForFirstPlayer(_ player: Player?) -> Int {
+        guard let player = player else { return 0 }
+        if player.declaredGrandTichu {
+            return 200
+        } else if player.declaredTichu {
+            return 100
+        }
+        return 0
+    }
+
+    private func basePoints(for player: Player) -> Int {
+        return player.cardsWon.reduce(0) { $0 + $1.points }
+    }
+
+    private func tichuPoints(for player: Player, finishOrder: [Player]) -> Int {
+        guard let finishedIndex = finishOrder.firstIndex(of: player) else { return 0 }
+        
+        if finishedIndex == 0 {
+            // Bonus points for finishing first with Tichu or Grand Tichu
+            return player.declaredGrandTichu ? 200 : (player.declaredTichu ? 100 : 0)
+        } else if player.declaredTichu || player.declaredGrandTichu {
+            // Deduction for not finishing first with a Tichu or Grand Tichu declaration
+            return player.declaredGrandTichu ? -200 : -100
+        }
+        return 0
+    }
+
+    private func isTeam1Player(_ player: Player) -> Bool {
+        guard let index = players.firstIndex(of: player) else { return false }
+        return index == 1 || index == 3
+    }
+
+    private func displayFinalScores(team1Points: Int, team2Points: Int) {
         print("Team 1 Total Points: \(team1Points)")
         print("Team 2 Total Points: \(team2Points)")
-        
+
         let winningTeam = team1Points > team2Points ? "Team 1" : "Team 2"
         print("\(winningTeam) wins the game!")
-        
-        // Reset game state or prepare for a new game
-        // e.g., reset player states, clear cards, etc.
-        // This depends on how your game state is managed
-
-        // Open popup to ask to play again
-        // Trigger UI for end-of-game options
     }
 
 }

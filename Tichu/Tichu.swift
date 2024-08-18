@@ -159,7 +159,16 @@ struct Tichu {
     
     mutating func checkForEndGame() -> Bool {
         let playersWithCards = players.filter { !$0.cards.isEmpty }
-        return playersWithCards.count <= 1
+
+        switch playersWithCards.count {
+        case 1:
+            return true
+        case 2:
+            let teamIndices = playersWithCards.compactMap { players.firstIndex(of: $0) }
+            return (teamIndices.allSatisfy { $0 == 1 || $0 == 3 }) || (teamIndices.allSatisfy { $0 == 0 || $0 == 2 })
+        default:
+            return false
+        }
     }
 
     

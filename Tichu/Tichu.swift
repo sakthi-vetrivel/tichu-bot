@@ -62,7 +62,8 @@ struct Tichu {
                 HandType(hand) == .FourOfAKindBomb || HandType(hand) == .StraightFlushBomb {
                 playable = true
             }
-
+       }
+        
         return playable
     }
 

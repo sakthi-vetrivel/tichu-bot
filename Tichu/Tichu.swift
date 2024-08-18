@@ -66,7 +66,6 @@ struct Tichu {
                 return true
             }
        }
-        
         return false
     }
 
@@ -399,6 +398,17 @@ struct Tichu {
                     team1Points += points
                 } else {
                     team2Points += points
+                }
+            }
+            // Handle points in hand of the last player
+            if let lastPlayer = finishedPlayerOrder.last {
+                let lastPlayerPoints = lastPlayer.cards.reduce(0) { $0 + $1.points }
+                
+                // Add these points to the opposite team
+                if [1, 3].contains(players.firstIndex(of: lastPlayer)) { // Last player was on Team 1
+                    team2Points += lastPlayerPoints
+                } else { // Last player was on Team 2
+                    team1Points += lastPlayerPoints
                 }
             }
         }
